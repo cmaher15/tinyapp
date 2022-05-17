@@ -10,6 +10,10 @@ const urlDatabase = {
   "9sm5xk": "http://www.google.ca"
 };
 
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
+
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -21,6 +25,11 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
+});
+
+app.post("/urls", (req, res) => {
+  console.log(req.body);
+  res.send("OK");
 });
 
 app.get("/urls/:shortURL", (req, res) => {
