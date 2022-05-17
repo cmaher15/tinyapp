@@ -5,13 +5,19 @@ const PORT = 8080;
 
 app.set("view engine", "ejs");
 
+function generateRandomString(url) {
+  const result = Math.random().toString(36).substring(2, 8);
+  return (result);
+}
+
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xk": "http://www.google.ca"
 };
 
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 
 app.get("/", (req, res) => {
