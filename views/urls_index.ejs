@@ -15,7 +15,7 @@
   <%- include('partials/_header') %>
     <main style="margin: 1em;">
       <h3>My URLs</h3>
-      <table class="tab le">
+      <table class="table" style="width: 700px;">
         <thead>
           <tr>
             <th scope="col">Short URL</th>
@@ -35,12 +35,12 @@
               </td>
               <td>
                 <form method="GET" action="/urls/<%= url %>/">
-                  <input type="submit" name="URL" value="Edit" class="btn btn-outline-primary">
+                  <input type="submit" name="URL" value="Edit" class="btn btn-outline-primary"></input>
                 </form>
               </td>
               <td>
                 <form method="POST" action="/urls/<%= url %>/delete">
-                  <input type="submit" name="URL" value="Delete" class="btn btn-outline-danger">
+                  <input type="submit" name="URL" value="Delete" class="btn btn-outline-danger"></input>
                 </form>
               </td>
             </tr>

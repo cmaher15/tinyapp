@@ -28,21 +28,20 @@ app.get("/", (req, res) => {
 
 //MAIN USER PAGE WHICH STORES THE URL DATABASE
 app.get("/urls", (req, res) => {
-  console.log("Request Cookie:", req.cookies)
   const username = req.cookies["username"];
   if (username) {
-  const templateVars = { username, urls: urlDatabase };
-  res.render("urls_index", templateVars)
-  } else {
-    // res.redirect("/")
     const templateVars = { username, urls: urlDatabase };
-    res.render("urls_index", templateVars)
+    res.render("urls_index", templateVars);
+  } else {
+    const templateVars = { username, urls: urlDatabase };
+    res.render("urls_index", templateVars);
   }
 });
 
 //PAGE FOR USER TO ADD A NEW URL 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  res.render("urls_new", templateVars);
 });
 
 //CODE WHICH LETS USER ADD NEW URL AND GENERATES A RANDOM CODE FOR THAT URL. REDIRECTS THEM TO /SHORTURL PAGE ONCE LINK IS COMPLETE
@@ -94,8 +93,8 @@ app.post("/login", (req, res) => {
 //LOGOUT FOR USER
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
-  res.redirect("/urls")
-})
+  res.redirect("/urls");
+});
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
