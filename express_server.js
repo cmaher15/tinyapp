@@ -1,26 +1,49 @@
-const express = require('express');
-const req = require('express/lib/request');
-const app = express();
-const cookieParser = require('cookie-parser');
 const PORT = 8080;
+const express = require('express');
+const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const req = require('express/lib/request');
 const res = require('express/lib/response');
+
+
+//CONFIGURATION 
+const app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
+
+//DATABASES 
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xk': 'http://www.google.ca'
 };
 
+const users = {
+  'userRandomID': {
+    id: 'userRandomID',
+    email: 'user@example.com',
+    password: 'raccon-up-a-tree'
+  },
+  'user2RandomID': {
+    id: 'user2RandomID',
+    email: 'user2@example.com',
+    password: 'dishwasher-funk'
+  }
+};
+
+//MIDDLEWARE
 app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+
+//SUPPORTING CODE
 
 function generateRandomString(url) {
   const result = Math.random().toString(36).substring(2, 8);
   return (result);
 }
 
+
+//ROUTES
 
 //MAIN USER PAGE WHICH STORES THE URL DATABASE
 app.get('/urls', (req, res) => {
@@ -96,7 +119,7 @@ app.post('/logout', (req, res) => {
 
 //REGISTRATION PAGE
 app.get('/register', (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies['username'] }
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies['username'] };
   res.render('url_register', templateVars);
 });
 
