@@ -28,8 +28,16 @@ app.get("/", (req, res) => {
 
 //MAIN USER PAGE WHICH STORES THE URL DATABASE
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
+  console.log("Request Cookie:", req.cookies)
+  const username = req.cookies["username"];
+  if (username) {
+  const templateVars = { username, urls: urlDatabase };
+  res.render("urls_index", templateVars)
+  } else {
+    // res.redirect("/")
+    const templateVars = { username, urls: urlDatabase };
+    res.render("urls_index", templateVars)
+  }
 });
 
 //PAGE FOR USER TO ADD A NEW URL 
@@ -45,7 +53,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
 
@@ -82,6 +90,12 @@ app.post("/login", (req, res) => {
   res.cookie("username", username);
   res.redirect("/urls");
 });
+
+//LOGOUT FOR USER
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls")
+})
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
