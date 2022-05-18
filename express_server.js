@@ -125,15 +125,17 @@ app.get('/register', (req, res) => {
 
 //REGISTRATION FORM
 app.post('/register', (req, res) => {
-  users[req.body.email] = { email: req.body.email, password: req.body.password };
-
-  res.redirect('/');
+  const userID = generateRandomString();
+  users[userID] = { id: userID, email: req.body.username, password: req.body.password };
+  res.cookie('user_ID', userID);
+  console.log('users', users);
+  res.redirect('/urls');
 });
 
-//404 ERROR ROUTE
-app.get('*', (req, res) => {
-  res.render('404');
-});
+// //404 ERROR ROUTE
+// app.get('*', (req, res) => {
+//   res.render('404');
+// });
 
 
 ////////////NOT SURE IF I NEED THESE/////////////
