@@ -22,10 +22,6 @@ function generateRandomString(url) {
 }
 
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
 //MAIN USER PAGE WHICH STORES THE URL DATABASE
 app.get("/urls", (req, res) => {
   const username = req.cookies["username"];
@@ -51,6 +47,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+//THE PAGE THAT GENERATES AFTER A SHORT URL IS CREATED.
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
@@ -90,18 +87,33 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
+
 //LOGOUT FOR USER
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
   res.redirect("/urls");
 });
 
+
+////////////NOT SURE IF I NEED THESE/////////////
+
+//STORES CODE FOR DATABASE
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
+
+//TEST CODE FOR SERVER
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
+//TEST CODE FOR SERVER
+app.get("/", (req, res) => {
+  res.send("Hello!");
+});
+
+///////////////////////////////////////////////////
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
