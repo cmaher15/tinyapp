@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const req = require('express/lib/request');
 const res = require('express/lib/response');
+const { use } = require('express/lib/application');
 
 
 //CONFIGURATION 
@@ -47,19 +48,23 @@ function generateRandomString(url) {
 
 //MAIN USER PAGE WHICH STORES THE URL DATABASE
 app.get('/urls', (req, res) => {
-  const username = req.cookies['username'];
-  if (username) {
-    const templateVars = { username, urls: urlDatabase };
+  const userID = req.cookies['user_ID'];
+  console.log('userID:', userID);
+  const user = users[userID];
+  if (user) {
+    const templateVars = { user, urls: urlDatabase };
     res.render('urls_index', templateVars);
   } else {
-    const templateVars = { username, urls: urlDatabase };
+    const templateVars = { user, urls: urlDatabase };
     res.render('urls_index', templateVars);
   }
 });
 
 //PAGE FOR USER TO ADD A NEW URL 
 app.get('/urls/new', (req, res) => {
-  const templateVars = { username: req.cookies['username'], urls: urlDatabase };
+  const userID = req.cookies['user_ID'];
+  const user = users[userID];
+  const templateVars = { user, urls: urlDatabase };
   res.render('urls_new', templateVars);
 });
 
@@ -72,7 +77,9 @@ app.post('/urls', (req, res) => {
 
 //THE PAGE THAT GENERATES AFTER A SHORT URL IS CREATED.
 app.get('/urls/:shortURL', (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies['username'] };
+  const userID = req.cookies['user_ID'];
+  const user = users[userID];
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
   res.render('urls_show', templateVars);
 });
 
@@ -103,23 +110,31 @@ app.post('/urls/:shortURL/', (req, res) => {
 });
 
 //LOGIN FOR USER
-app.post('/login', (req, res) => {
-  const username = req.body.username;
-  console.log(username);
-  res.cookie('username', username);
-  res.redirect('/urls');
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  for (const id in users) {
+    const user = users[id];
+    if (user.email === email) {
+      console.log('user object:', user);
+      res.cookie('user_ID', user.id);
+      return res.redirect('/urls');
+    }
+  }
+  return res.redirect('/urls');
 });
 
 
 //LOGOUT FOR USER
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_ID');
   res.redirect('/urls');
 });
 
 //REGISTRATION PAGE
 app.get('/register', (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies['username'] };
+  const userID = req.cookies['user_ID'];
+  const user = users[userID];
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
   res.render('url_register', templateVars);
 });
 
@@ -128,7 +143,8 @@ app.post('/register', (req, res) => {
   const userID = generateRandomString();
   users[userID] = { id: userID, email: req.body.username, password: req.body.password };
   res.cookie('user_ID', userID);
-  console.log('users', users);
+  // console.log('users', users);
+  // console.log(users[userID]);
   res.redirect('/urls');
 });
 
