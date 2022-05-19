@@ -161,7 +161,10 @@ app.post('/register', (req, res) => {
 
 //404 ERROR ROUTE
 app.get('*', (req, res) => {
-  res.render('404');
+  const userID = req.cookies['user_ID'];
+  const user = users[userID];
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
+  res.render('url_error', templateVars)
 });
 
 
