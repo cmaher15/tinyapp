@@ -111,9 +111,7 @@ app.post('/urls', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
-  console.log('shrtreqparams', req.params.shortURL);
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user, urls: urlDatabase };
-  console.log('templateVars sent to URLS_show', templateVars);
   if (!user) {
     return res.status(403).send("Error 403 - Forbidden");
   }
@@ -142,9 +140,13 @@ app.get('/urls/:shortURL/', (req, res) => {
 
 //ALLOWS A USER TO EDIT A LONG URL 
 app.post('/urls/:shortURL/', (req, res) => {
+  const userID = req.cookies['user_ID'];
   const shortURL = req.params.shortURL;
-  const newLongURL = req.body.longURL;
-  urlDatabase[shortURL] = newLongURL;
+  let returnUser = {
+    longURL: req.body.longURL,
+    userID
+  }
+  urlDatabase[shortURL] = returnUser;
   res.redirect('/urls');
 });
 
