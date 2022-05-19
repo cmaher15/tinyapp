@@ -68,9 +68,10 @@ function generateRandomString(url) {
 app.get('/urls', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
+  console.log('user', user)
   if (user) {
     const templateVars = { user, urls: urlDatabase };
-    console.log('templateVars', templateVars)
+    console.log('templateVars sent to URLS_indes', templateVars);
     res.render('urls_index', templateVars);
   } else {
     res.redirect('/login');
@@ -81,7 +82,7 @@ app.get('/urls', (req, res) => {
 app.get('/urls/new', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
-  const templateVars = { user, urls: urlDatabase }
+  const templateVars = { user, urls: urlDatabase };
   if (user) {
     res.render('urls_new', templateVars);
   } else {
@@ -92,12 +93,17 @@ app.get('/urls/new', (req, res) => {
 //CODE WHICH LETS USER ADD NEW URL AND GENERATES A RANDOM CODE FOR THAT URL. REDIRECTS THEM TO /SHORTURL PAGE ONCE LINK IS COMPLETE
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
   const userID = req.cookies['user_ID'];
+  let returnUser = {
+    longURL: req.body.longURL,
+    userID
+  }
+  urlDatabase[shortURL] = returnUser;
   const user = users[userID];
   if (user) {
     res.redirect(`/urls/${shortURL}`);
-  }});
+  }
+});
 //   return res.status(403).send("Error 403 - Forbidden");
 // });
 
@@ -105,24 +111,27 @@ app.post('/urls', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
-  if (user) {
-    res.render('urls_show', templateVars);
-  } 
-  // return res.status(403).send("Error 403 - Forbidden");
+  console.log('shrtreqparams', req.params.shortURL);
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user, urls: urlDatabase };
+  console.log('templateVars sent to URLS_show', templateVars);
+  if (!user) {
+    return res.status(403).send("Error 403 - Forbidden");
+  }
+  res.render('urls_show', templateVars);
 });
 
 //REDIRECTS USER TO THE ACTUAL WEBSITE REPRESENTED BY SHORT URL
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL
-  console.log('redirectlink', longURL)
-
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  // if (!longURL) {
   res.redirect(longURL);
+  //   }
+  //  return res.status(404).send("404 - Page Not Found.")
 });
 
 //DELETES A LINK
 app.post('/urls/:shortURL/delete', (req, res) => {
-  delete urlDatabase[req.params.shortURL]
+  delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 });
 
@@ -134,10 +143,8 @@ app.get('/urls/:shortURL/', (req, res) => {
 //ALLOWS A USER TO EDIT A LONG URL 
 app.post('/urls/:shortURL/', (req, res) => {
   const shortURL = req.params.shortURL;
-  console.log('beforereqBod', urlDatabase[shortURL].longURL)
   const newLongURL = req.body.longURL;
   urlDatabase[shortURL] = newLongURL;
-  console.log('afterreqBod', urlDatabase[shortURL])
   res.redirect('/urls');
 });
 
@@ -151,7 +158,7 @@ app.get('/login', (req, res) => {
 
 //LOGIN FORM FOR USER
 app.post("/login", (req, res) => {
-  const loginEmail = req.body.username;
+  const loginEmail = req.body.email;
   const loginPassword = req.body.password;
   for (const id in users) {
     const user = users[id];
@@ -160,7 +167,7 @@ app.post("/login", (req, res) => {
       return res.redirect('/urls');
     }
   }
-  return res.status(403).send("Error 403 - Forbidden");
+  return res.status(401).send("Error 401 - Unauthorized");
 });
 
 
@@ -183,16 +190,16 @@ app.post('/register', (req, res) => {
 
   for (const id in users) {
     let user = users[id];
-    if (user.email === req.body.username) {
+    if ((req.body.email === "") || (req.body.password === "")) {
       return res.status(404).send("Error 404 - Not Found");
-    } else if ((req.body.username === "") || (req.body.password === "")) {
-      return res.status(404).send("Error 404 - Not Found");
+    } else if (user.email === req.body.email) {
+      return res.status(404).send("Error 404 - Not Found")
     }
   }
   const userID = generateRandomString();
-  users[userID] = { id: userID, email: req.body.username, password: req.body.password };
-  res.cookie('user_ID', userID);
-  return res.redirect('/urls');
+  users[userID] = { id: userID, email: req.body.email, password: req.body.password };
+  // res.cookie('user_ID', userID);
+  return res.redirect('/login');
 });
 
 // //403 ERROR ROUTE
