@@ -75,7 +75,13 @@ app.get('/urls/new', (req, res) => {
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+  const userID = req.cookies['user_ID'];
+  const user = users[userID];
+  if (user) {
+    res.redirect(`/urls/${shortURL}`);
+  }
+  res.redirect('/403');
+
 });
 
 //THE PAGE THAT GENERATES AFTER A SHORT URL IS CREATED.
@@ -83,7 +89,9 @@ app.get('/urls/:shortURL', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
-  res.render('urls_show', templateVars);
+  if (user) {
+    res.render('urls_show', templateVars);
+  } res.redirect('/403');
 });
 
 //REDIRECTS USER TO THE ACTUAL WEBSITE REPRESENTED BY SHORT URL
