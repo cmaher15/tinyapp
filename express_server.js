@@ -55,7 +55,7 @@ app.get('/urls', (req, res) => {
     const templateVars = { user, urls: urlDatabase };
     res.render('urls_index', templateVars);
   } else {
-    res.redirect('/register');
+    res.redirect('/login');
   }
 });
 
@@ -64,7 +64,11 @@ app.get('/urls/new', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
   const templateVars = { user, urls: urlDatabase };
-  res.render('urls_new', templateVars);
+  if (user) {
+    res.render('urls_new', templateVars);
+  } else {
+    res.redirect('/login');
+  }
 });
 
 //CODE WHICH LETS USER ADD NEW URL AND GENERATES A RANDOM CODE FOR THAT URL. REDIRECTS THEM TO /SHORTURL PAGE ONCE LINK IS COMPLETE
@@ -119,15 +123,15 @@ app.get('/login', (req, res) => {
 //LOGIN FORM FOR USER
 app.post("/login", (req, res) => {
   const loginEmail = req.body.username;
-  // console.log('login email', loginEmail);
+  console.log('login email', loginEmail);
   const loginPassword = req.body.password;
-  // console.log('login password', loginPassword);
+  console.log('login password', loginPassword);
   for (const id in users) {
     const user = users[id];
-    // console.log('user email', user.email);
-    // console.log('user password', user.password);
+    console.log('user email', user.email);
+    console.log('user password', user.password);
     if (user.email === loginEmail || user.password === loginPassword) {
-      // console.log('user object:', user);
+      console.log('user object:', user);
       res.cookie('user_ID', user.id);
       return res.redirect('/urls');
 
