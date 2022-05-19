@@ -108,25 +108,39 @@ app.post('/urls/:shortURL/', (req, res) => {
   res.redirect('/urls');
 });
 
-//LOGIN FOR USER
+//LOGIN PAGE FOR USER 
+app.get('/login', (req, res) => {
+  const userID = req.cookies['user_ID'];
+  const user = users[userID];
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
+  res.render('url_login', templateVars);
+});
+
+//LOGIN FORM FOR USER
 app.post("/login", (req, res) => {
-  const email = req.body.email;
+  const loginEmail = req.body.username;
+  // console.log('login email', loginEmail);
+  const loginPassword = req.body.password;
+  // console.log('login password', loginPassword);
   for (const id in users) {
     const user = users[id];
-    if (user.email === email) {
-      console.log('user object:', user);
+    // console.log('user email', user.email);
+    // console.log('user password', user.password);
+    if (user.email === loginEmail || user.password === loginPassword) {
+      // console.log('user object:', user);
       res.cookie('user_ID', user.id);
       return res.redirect('/urls');
+
     }
   }
-  return res.redirect('/urls');
+  return res.redirect('/login');
 });
 
 
 //LOGOUT FOR USER
 app.post('/logout', (req, res) => {
   res.clearCookie('user_ID');
-  res.redirect('/register');
+  res.redirect('/login');
 });
 
 //REGISTRATION PAGE
@@ -164,7 +178,7 @@ app.get('*', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
-  res.render('url_error', templateVars)
+  res.render('url_error', templateVars);
 });
 
 
