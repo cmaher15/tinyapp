@@ -13,10 +13,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 //DATABASES 
 
-// const urlDatabase = {
-//   'b2xVn2': 'http://www.lighthouselabs.ca',
-//   '9sm5xk': 'http://www.google.ca'
-// };
 
 const urlDatabase = {
   b6UTxQ: {
@@ -71,7 +67,6 @@ function generateRandomString(url) {
 //MAIN USER PAGE WHICH STORES THE URL DATABASE
 app.get('/urls', (req, res) => {
   const userID = req.cookies['user_ID'];
-  // console.log('userID:', userID);
   const user = users[userID];
   if (user) {
     const templateVars = { user, urls: urlDatabase };
@@ -85,7 +80,7 @@ app.get('/urls', (req, res) => {
 app.get('/urls/new', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
-  const templateVars = { user, urls: urlDatabase };
+  const templateVars = { user, urls: urlDatabase }
   if (user) {
     res.render('urls_new', templateVars);
   } else {
@@ -101,25 +96,24 @@ app.post('/urls', (req, res) => {
   const user = users[userID];
   if (user) {
     res.redirect(`/urls/${shortURL}`);
-  }
-  res.status(403).send("Error 403 - Forbidden");
-
-});
+  }});
+//   return res.status(403).send("Error 403 - Forbidden");
+// });
 
 //THE PAGE THAT GENERATES AFTER A SHORT URL IS CREATED.
 app.get('/urls/:shortURL', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
   if (user) {
     res.render('urls_show', templateVars);
-  } res.status(403).send("Error 403 - Forbidden");
+  } 
+  // return res.status(403).send("Error 403 - Forbidden");
 });
 
 //REDIRECTS USER TO THE ACTUAL WEBSITE REPRESENTED BY SHORT URL
 app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
-  console.log(longURL)
   res.redirect(longURL);
 });
 
@@ -138,8 +132,7 @@ app.get('/urls/:shortURL/', (req, res) => {
 app.post('/urls/:shortURL/', (req, res) => {
   const shortURL = req.params.shortURL;
   const newLongURL = req.body.longURL;
-  urlDatabase[shortURL].longURL = newLongURL;
-  // console.log(urlDatabase);
+  urlDatabase[shortURL] = newLongURL;
   res.redirect('/urls');
 });
 
@@ -154,18 +147,12 @@ app.get('/login', (req, res) => {
 //LOGIN FORM FOR USER
 app.post("/login", (req, res) => {
   const loginEmail = req.body.username;
-  // console.log('login email', loginEmail);
   const loginPassword = req.body.password;
-  // console.log('login password', loginPassword);
   for (const id in users) {
     const user = users[id];
-    // console.log('user email', user.email);
-    // console.log('user password', user.password);
     if (user.email === loginEmail && user.password === loginPassword) {
-      // console.log('user object:', user);
       res.cookie('user_ID', user.id);
       return res.redirect('/urls');
-
     }
   }
   return res.status(403).send("Error 403 - Forbidden");
@@ -188,22 +175,17 @@ app.get('/register', (req, res) => {
 
 //REGISTRATION FORM
 app.post('/register', (req, res) => {
-  // console.log('req.body.username', req.body.username);
-  // console.log('req.body.password', req.body.password);
+
   for (const id in users) {
     let user = users[id];
-    // console.log('usersID', users[id]);
-    // console.log('id', id);
-    // console.log('user.email:', user.email);
     if (user.email === req.body.username) {
       return res.status(404).send("Error 404 - Not Found");
     } else if ((req.body.username === "") || (req.body.password === "")) {
-      res.status(404).send("Error 404 - Not Found");
+      return res.status(404).send("Error 404 - Not Found");
     }
   }
   const userID = generateRandomString();
   users[userID] = { id: userID, email: req.body.username, password: req.body.password };
-  // console.log('new email register', users[userID].email);
   res.cookie('user_ID', userID);
   return res.redirect('/urls');
 });
