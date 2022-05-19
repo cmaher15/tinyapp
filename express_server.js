@@ -1,15 +1,9 @@
-const PORT = 8080;
+onst PORT = 8080;
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const req = require('express/lib/request');
 const res = require('express/lib/response');
-<<<<<<< HEAD
-
-//CONFIGURATION
-const app = express();
-app.set('view engine', 'ejs');
-=======
 const { use } = require('express/lib/application');
 
 
@@ -18,29 +12,13 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //DATABASES 
->>>>>>> feature/user-registration
 
-//DATABASE
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xk': 'http://www.google.ca'
 };
 
 const users = {
-<<<<<<< HEAD
-  'test@example.com': { email: 'test@example.com', password: 'test' },
-  'test2@example.com': { email: 'test2@example.com', password: 'test2' }
-};
-
-
-//MIDDLEWARE
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
-
-
-//SUPPORTING CODE
-
-=======
   'userRandomID': {
     id: 'userRandomID',
     email: 'user@example.com',
@@ -59,28 +37,17 @@ app.use(cookieParser());
 
 
 //HELPER FUNCTIONS
->>>>>>> feature/user-registration
 
 function generateRandomString(url) {
   const result = Math.random().toString(36).substring(2, 8);
   return (result);
 }
 
-//ROUTES
 
 //ROUTES
 
 //MAIN USER PAGE WHICH STORES THE URL DATABASE
 app.get('/urls', (req, res) => {
-<<<<<<< HEAD
-  const username = req.cookies['username'];
-  if (username) {
-    const templateVars = { username, urls: urlDatabase };
-    res.render('urls_index', templateVars);
-  } else {
-    const templateVars = { username, urls: urlDatabase };
-    res.render('urls_index', templateVars);
-=======
   const userID = req.cookies['user_ID'];
   console.log('userID:', userID);
   const user = users[userID];
@@ -89,28 +56,11 @@ app.get('/urls', (req, res) => {
     res.render('urls_index', templateVars);
   } else {
     res.redirect('/login');
->>>>>>> feature/user-registration
   }
 });
 
 //PAGE FOR USER TO ADD A NEW URL 
 app.get('/urls/new', (req, res) => {
-<<<<<<< HEAD
-  const templateVars = { username: req.cookies['username'], urls: urlDatabase };
-  res.render('urls_new', templateVars);
-});
-
-//REGISTRATION PAGE
-app.get('/register', (req, res) => {
-  res.render('/register');
-});
-
-//REGISTRATION FORM
-app.post('/register', (req, res) => {
-  users[req.body.email] = { email: req.body.email, password: req.body.password };
-
-  res.redirect('/');
-=======
   const userID = req.cookies['user_ID'];
   const user = users[userID];
   const templateVars = { user, urls: urlDatabase };
@@ -119,7 +69,6 @@ app.post('/register', (req, res) => {
   } else {
     res.redirect('/login');
   }
->>>>>>> feature/user-registration
 });
 
 //CODE WHICH LETS USER ADD NEW URL AND GENERATES A RANDOM CODE FOR THAT URL. REDIRECTS THEM TO /SHORTURL PAGE ONCE LINK IS COMPLETE
@@ -131,13 +80,9 @@ app.post('/urls', (req, res) => {
 
 //THE PAGE THAT GENERATES AFTER A SHORT URL IS CREATED.
 app.get('/urls/:shortURL', (req, res) => {
-<<<<<<< HEAD
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies['username'] };
-=======
   const userID = req.cookies['user_ID'];
   const user = users[userID];
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
->>>>>>> feature/user-registration
   res.render('urls_show', templateVars);
 });
 
@@ -153,11 +98,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   res.redirect('/urls');
 });
 
-<<<<<<< HEAD
-//DIRECTS USER TO "EDIT" PAGE FOR THAT LINK WHEN EDIT BUTTON IS CLICKED.
-=======
 //DIRECTS USER TO 'EDIT' PAGE FOR THAT LINK WHEN EDIT BUTTON IS CLICKED.
->>>>>>> feature/user-registration
 app.get('/urls/:shortURL/', (req, res) => {
   res.redirect(`/urls/${req.params.shortURL}`);
 });
@@ -171,14 +112,6 @@ app.post('/urls/:shortURL/', (req, res) => {
   res.redirect('/urls');
 });
 
-<<<<<<< HEAD
-//LOGIN FOR USER
-app.post('/login', (req, res) => {
-  const username = req.body.username;
-  console.log(username);
-  res.cookie('username', username);
-  res.redirect('/urls');
-=======
 //LOGIN PAGE FOR USER 
 app.get('/login', (req, res) => {
   const userID = req.cookies['user_ID'];
@@ -205,16 +138,11 @@ app.post("/login", (req, res) => {
     }
   }
   return res.redirect('/403');
->>>>>>> feature/user-registration
 });
 
 
 //LOGOUT FOR USER
 app.post('/logout', (req, res) => {
-<<<<<<< HEAD
-  res.clearCookie('username');
-  res.redirect('/urls');
-=======
   res.clearCookie('user_ID');
   res.redirect('/login');
 });
@@ -247,7 +175,6 @@ app.post('/register', (req, res) => {
   // console.log('new email register', users[userID].email);
   res.cookie('user_ID', userID);
   return res.redirect('/urls');
->>>>>>> feature/user-registration
 });
 
 //403 ERROR ROUTE
