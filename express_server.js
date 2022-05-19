@@ -130,14 +130,14 @@ app.post("/login", (req, res) => {
     const user = users[id];
     console.log('user email', user.email);
     console.log('user password', user.password);
-    if (user.email === loginEmail || user.password === loginPassword) {
+    if (user.email === loginEmail && user.password === loginPassword) {
       console.log('user object:', user);
       res.cookie('user_ID', user.id);
       return res.redirect('/urls');
 
     }
   }
-  return res.redirect('/login');
+  return res.redirect('/403');
 });
 
 
@@ -165,9 +165,9 @@ app.post('/register', (req, res) => {
     // console.log('id', id);
     // console.log('user.email:', user.email);
     if (user.email === req.body.username) {
-      return res.redirect('/404');
+      return res.redirect('/error/404');
     } else if ((req.body.username === "") || (req.body.password === "")) {
-      res.redirect('/404');
+      res.redirect('/error/404');
     }
   }
   const userID = generateRandomString();
@@ -177,13 +177,24 @@ app.post('/register', (req, res) => {
   return res.redirect('/urls');
 });
 
+//403 ERROR ROUTE
+app.get('/403', (req, res) => {
+  const userID = req.cookies['user_ID'];
+  const user = users[userID];
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
+  res.render('url_forbidden', templateVars);
+});
+
+
 //404 ERROR ROUTE
-app.get('*', (req, res) => {
+app.get('/error/404', (req, res) => {
   const userID = req.cookies['user_ID'];
   const user = users[userID];
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
   res.render('url_error', templateVars);
 });
+
+
 
 
 ////////////NOT SURE IF I NEED THESE/////////////
