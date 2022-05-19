@@ -52,7 +52,7 @@ function generateRandomString(url) {
 }
 
 function urlsForUser(loggedInUserID) {
-  const userURLs = {}
+  const userURLs = {};
   for (let shortURL in urlDatabase) {
     if (loggedInUserID === urlDatabase[shortURL].userID) {
       userURLs[shortURL] = urlDatabase[shortURL];
@@ -70,8 +70,8 @@ app.get('/urls', (req, res) => {
   if (!user) {
     return res.status(403).send("Error 403 - Forbidden");
   }
-  const urls = urlsForUser(userID)
-  const templateVars = { user, urls};
+  const urls = urlsForUser(userID);
+  const templateVars = { user, urls };
   res.render('urls_index', templateVars);
 });
 
@@ -101,8 +101,7 @@ app.post('/urls', (req, res) => {
     res.redirect(`/urls/${shortURL}`);
   }
 });
-//   return res.status(403).send("Error 403 - Forbidden");
-// });
+
 
 //THE PAGE THAT GENERATES AFTER A SHORT URL IS CREATED.
 app.get('/urls/:shortURL', (req, res) => {
@@ -117,17 +116,25 @@ app.get('/urls/:shortURL', (req, res) => {
 
 //REDIRECTS USER TO THE ACTUAL WEBSITE REPRESENTED BY SHORT URL
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
   const shortURL = req.params.shortURL;
-  if (!shortURL in urlDatabase) {
+  if (!urlDatabase[shortURL]) {
     return res.status(404).send("404 - Page Not Found.");
   }
+
+  const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
 //DELETES A LINK
 app.post('/urls/:shortURL/delete', (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+  const userID = req.cookies['user_ID'];
+  const shortURL = req.params.shortURL;
+  const url = urlDatabase[shortURL];
+  if (url.userID !== userID) {
+    return res.status(403).send('Error 403 - Forbidden');
+  }
+
+  delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
 
@@ -140,6 +147,11 @@ app.get('/urls/:shortURL/', (req, res) => {
 app.post('/urls/:shortURL/', (req, res) => {
   const userID = req.cookies['user_ID'];
   const shortURL = req.params.shortURL;
+  const url = urlDatabase[shortURL];
+  if (url.userID !== userID) {
+    return res.status(403).send('Error 403 - Forbidden');
+  }
+
   let returnUser = {
     longURL: req.body.longURL,
     userID
@@ -200,23 +212,6 @@ app.post('/register', (req, res) => {
   users[userID] = { id: userID, email: req.body.email, password: req.body.password };
   return res.redirect('/login');
 });
-
-// //403 ERROR ROUTE
-// app.get('/403', (req, res) => {
-//   const userID = req.cookies['user_ID'];
-//   const user = users[userID];
-//   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
-//   res.render('url_forbidden', templateVars);
-// });
-
-
-// //404 ERROR ROUTE
-// app.get('/error/404', (req, res) => {
-//   const userID = req.cookies['user_ID'];
-//   const user = users[userID];
-//   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
-//   res.render('url_error', templateVars);
-// });
 
 
 
