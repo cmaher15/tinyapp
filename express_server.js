@@ -36,7 +36,7 @@ app.set('view engine', 'ejs');
 app.use(cookieParser());
 
 
-//SUPPORTING CODE
+//HELPER FUNCTIONS
 
 function generateRandomString(url) {
   const result = Math.random().toString(36).substring(2, 8);
@@ -55,8 +55,7 @@ app.get('/urls', (req, res) => {
     const templateVars = { user, urls: urlDatabase };
     res.render('urls_index', templateVars);
   } else {
-    const templateVars = { user, urls: urlDatabase };
-    res.render('urls_index', templateVars);
+    res.redirect('/register');
   }
 });
 
@@ -127,7 +126,7 @@ app.post("/login", (req, res) => {
 //LOGOUT FOR USER
 app.post('/logout', (req, res) => {
   res.clearCookie('user_ID');
-  res.redirect('/urls');
+  res.redirect('/register');
 });
 
 //REGISTRATION PAGE
@@ -140,18 +139,30 @@ app.get('/register', (req, res) => {
 
 //REGISTRATION FORM
 app.post('/register', (req, res) => {
+  // console.log('req.body.username', req.body.username);
+  // console.log('req.body.password', req.body.password);
+  for (const id in users) {
+    let user = users[id];
+    // console.log('usersID', users[id]);
+    // console.log('id', id);
+    // console.log('user.email:', user.email);
+    if (user.email === req.body.username) {
+      return res.redirect('/404');
+    } else if ((req.body.username === "") || (req.body.password === "")) {
+      res.redirect('/404');
+    }
+  }
   const userID = generateRandomString();
   users[userID] = { id: userID, email: req.body.username, password: req.body.password };
+  // console.log('new email register', users[userID].email);
   res.cookie('user_ID', userID);
-  // console.log('users', users);
-  // console.log(users[userID]);
-  res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
-// //404 ERROR ROUTE
-// app.get('*', (req, res) => {
-//   res.render('404');
-// });
+//404 ERROR ROUTE
+app.get('*', (req, res) => {
+  res.render('404');
+});
 
 
 ////////////NOT SURE IF I NEED THESE/////////////
