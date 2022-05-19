@@ -70,6 +70,7 @@ app.get('/urls', (req, res) => {
   const user = users[userID];
   if (user) {
     const templateVars = { user, urls: urlDatabase };
+    console.log('templateVars', templateVars)
     res.render('urls_index', templateVars);
   } else {
     res.redirect('/login');
@@ -113,7 +114,8 @@ app.get('/urls/:shortURL', (req, res) => {
 
 //REDIRECTS USER TO THE ACTUAL WEBSITE REPRESENTED BY SHORT URL
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const longURL = urlDatabase[req.params.shortURL]
+
   res.redirect(longURL);
 });
 
@@ -131,8 +133,10 @@ app.get('/urls/:shortURL/', (req, res) => {
 //ALLOWS A USER TO EDIT A LONG URL 
 app.post('/urls/:shortURL/', (req, res) => {
   const shortURL = req.params.shortURL;
+  console.log('beforereqBod', urlDatabase[shortURL].longURL)
   const newLongURL = req.body.longURL;
   urlDatabase[shortURL] = newLongURL;
+  console.log('afterreqBod', urlDatabase[shortURL])
   res.redirect('/urls');
 });
 
