@@ -114,7 +114,8 @@ app.get('/urls/:shortURL', (req, res) => {
 
 //REDIRECTS USER TO THE ACTUAL WEBSITE REPRESENTED BY SHORT URL
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL]
+  const longURL = urlDatabase[req.params.shortURL].longURL
+  console.log('redirectlink', longURL)
 
   res.redirect(longURL);
 });
