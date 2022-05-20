@@ -2,6 +2,7 @@ const PORT = 8080;
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcryptjs');
 const req = require('express/lib/request');
 const res = require('express/lib/response');
 const { use } = require('express/lib/application');
@@ -30,12 +31,14 @@ const users = {
   'userRandomID': {
     id: 'userRandomID',
     email: 'user@example.com',
-    password: 'raccon-up-a-tree'
+    password: 'raccon-up-a-tree',
+    hashedPassword: 'vrymltknehltm'
   },
   'user2RandomID': {
     id: 'user2RandomID',
     email: 'user2@example.com',
-    password: 'dishwasher-funk'
+    password: 'dishwasher-funk',
+    hashedPassword: '#C5jl36hvl4b6'
   }
 };
 
@@ -174,12 +177,12 @@ app.post("/login", (req, res) => {
   const loginPassword = req.body.password;
   for (const id in users) {
     const user = users[id];
-    if (user.email === loginEmail && user.password === loginPassword) {
+    if (user.email === loginEmail && bcrypt.compareSync(loginPassword, user.password)) {
       res.cookie('user_ID', user.id);
       return res.redirect('/urls');
     }
   }
-  return res.status(401).send("Error 401 - Unauthorized");
+  return res.status(401).send("Error 401 - Password or email are incorrect.");
 });
 
 
@@ -203,13 +206,16 @@ app.post('/register', (req, res) => {
   for (const id in users) {
     let user = users[id];
     if ((req.body.email === "") || (req.body.password === "")) {
-      return res.status(404).send("Error 404 - Not Found");
+      return res.status(400).send('Error 400 - Email and password must not be blank');
     } else if (user.email === req.body.email) {
-      return res.status(404).send("Error 404 - Not Found");
+      return res.status(400).send('Error 400 - Email already in use');
     }
   }
   const userID = generateRandomString();
-  users[userID] = { id: userID, email: req.body.email, password: req.body.password };
+  const password = req.body.password;
+  const hashPassword = bcrypt.hashSync(password, 10);
+  users[userID] = { id: userID, email: req.body.email, password: hashPassword };
+  console.log('userID', users[userID]);
   return res.redirect('/login');
 });
 
