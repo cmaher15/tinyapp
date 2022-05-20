@@ -1,3 +1,4 @@
+//REQUIREMENTS
 const PORT = 8080;
 const express = require('express');
 const cookieSession = require('cookie-session');
@@ -8,14 +9,11 @@ const req = require('express/lib/request');
 const res = require('express/lib/response');
 const { use } = require('express/lib/application');
 
-
 //CONFIGURATION 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
 //DATABASES 
-
 const urlDatabase = {
   b6UTxQ: {
     longURL: 'https://www.tsn.ca',
@@ -26,7 +24,6 @@ const urlDatabase = {
     userID: 'aJ48lW'
   }
 };
-
 
 const users = {
   'userRandomID': {
@@ -51,6 +48,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000
 }));
 
+
 ///HELPER FUNCTIONS///
 
 //TO GENERATE A RANDOM STRING TO USE FOR USER ID AND SHORT URLS//
@@ -70,9 +68,11 @@ const urlsForUser = (loggedInUserID) => {
   return userURLs;
 };
 
-//ROUTES
+//////////////////////////////////ROUTES//////////////////////////////////
 
-//MAIN USER PAGE WHICH STORES THE URL DATABASE
+
+//MAIN USER ROUTE WHICH STORES THE URL DATABASE//
+
 app.get('/urls', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
@@ -84,7 +84,9 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-//PAGE FOR USER TO ADD A NEW URL 
+
+//ROUTE FOR USER TO ADD A NEW URL//
+
 app.get('/urls/new', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
@@ -96,7 +98,9 @@ app.get('/urls/new', (req, res) => {
   }
 });
 
-//CODE WHICH LETS USER ADD NEW URL AND GENERATES A RANDOM CODE FOR THAT URL. REDIRECTS THEM TO /SHORTURL PAGE ONCE LINK IS COMPLETE
+
+//ROUTE TO GENERATE NEW TINYURL; REDIRECTS TO SHORTURL ROUTE//
+
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   const userID = req.session.user_id;
@@ -112,7 +116,8 @@ app.post('/urls', (req, res) => {
 });
 
 
-//THE PAGE THAT GENERATES AFTER A SHORT URL IS CREATED.
+//ROUTE THAT GENERATES AFTER A SHORT URL IS CREATED//
+
 app.get('/urls/:shortURL', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
@@ -124,7 +129,9 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-//REDIRECTS USER TO THE ACTUAL WEBSITE REPRESENTED BY SHORT URL
+
+//ROUTE TO REDIRECT USER TO THE ACTUAL WEBSITE REPRESENTED BY SHORT URL//
+
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   if (!urlDatabase[shortURL]) {
@@ -134,7 +141,9 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 
-//DELETES A LINK
+
+//ROUTE TO DELETE A TINYURL//
+
 app.post('/urls/:shortURL/delete', (req, res) => {
   const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
@@ -146,12 +155,16 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   res.redirect('/urls');
 });
 
-//DIRECTS USER TO 'EDIT' PAGE FOR THAT LINK WHEN EDIT BUTTON IS CLICKED.
+
+//ROUTE TO 'EDIT' PAGE FOR THAT LINK WHEN EDIT BUTTON IS CLICKED//
+
 app.get('/urls/:shortURL/', (req, res) => {
   res.redirect(`/urls/${req.params.shortURL}`);
 });
 
-//ALLOWS A USER TO EDIT A LONG URL 
+
+//ROUTE ALLOWING USER TO EDIT A LONG URL //
+
 app.post('/urls/:shortURL/', (req, res) => {
   const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
@@ -167,7 +180,9 @@ app.post('/urls/:shortURL/', (req, res) => {
   res.redirect('/urls');
 });
 
-//LOGIN PAGE FOR USER 
+
+//LOGIN ROUTE FOR USER//
+
 app.get('/login', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
@@ -175,7 +190,9 @@ app.get('/login', (req, res) => {
   res.render('url_login', templateVars);
 });
 
-//LOGIN FORM FOR USER
+
+//LOGIN FORM FOR USER//
+
 app.post('/login', (req, res) => {
   const loginEmail = req.body.email;
   const loginPassword = req.body.password;
@@ -188,13 +205,16 @@ app.post('/login', (req, res) => {
 });
 
 
-//LOGOUT FOR USER
+//LOGOUT ROUTE FOR USER//
+
 app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/login');
 });
 
-//REGISTRATION PAGE
+
+//REGISTRATION ROUTE//
+
 app.get('/register', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
@@ -202,7 +222,9 @@ app.get('/register', (req, res) => {
   res.render('url_register', templateVars);
 });
 
-//REGISTRATION FORM
+
+//REGISTRATION FORM FOR USER//
+
 app.post('/register', (req, res) => {
   const registrationEmail = req.body.email;
   const registrationPassword = req.body.password;
@@ -218,12 +240,9 @@ app.post('/register', (req, res) => {
 });
 
 
+///SERVER///
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
 
-//notes to mention:
-//my logout and register redirect to login, rather than urls
-//I tried to move my other functions and could not
-//I acknowledge the three "unused" items at the top but left them because we were told to install/require them 
