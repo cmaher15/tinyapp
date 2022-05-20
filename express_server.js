@@ -3,6 +3,7 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
+const getUserByEmail = require('./helpers');
 const req = require('express/lib/request');
 const res = require('express/lib/response');
 const { use } = require('express/lib/application');
@@ -53,12 +54,12 @@ app.use(cookieSession({
 
 //HELPER FUNCTIONS
 
-function generateRandomString(url) {
+const generateRandomString = function() {
   const result = Math.random().toString(36).substring(2, 8);
   return (result);
-}
+};
 
-function urlsForUser(loggedInUserID) {
+const urlsForUser = function(loggedInUserID) {
   const userURLs = {};
   for (let shortURL in urlDatabase) {
     if (loggedInUserID === urlDatabase[shortURL].userID) {
@@ -67,6 +68,7 @@ function urlsForUser(loggedInUserID) {
   }
   return userURLs;
 };
+
 
 //ROUTES
 
@@ -114,7 +116,8 @@ app.post('/urls', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user, urls: urlDatabase };
+  const { shortURL } = req.params
+  const templateVars = { shortURL, longURL: urlDatabase[shortURL], user, urls: urlDatabase };
   if (!user) {
     return res.status(403).send("Error 403 - you must be logged in to see this page");
   }
@@ -179,12 +182,10 @@ app.get('/login', (req, res) => {
 app.post("/login", (req, res) => {
   const loginEmail = req.body.email;
   const loginPassword = req.body.password;
-  for (const id in users) {
-    const user = users[id];
-    if (user.email === loginEmail && bcrypt.compareSync(loginPassword, user.password)) {
-      req.session.user_id = user['id'];
-      return res.redirect('/urls');
-    }
+  const userData = getUserByEmail(loginEmail, users);
+  if (userData.email === loginEmail && bcrypt.compareSync(loginPassword, userData.password)) {
+    req.session.user_id = userData.id;
+    return res.redirect('/urls');
   }
   return res.status(401).send("Error 401 - Password or email are incorrect.");
 });
@@ -209,6 +210,7 @@ app.post('/register', (req, res) => {
 
   for (const id in users) {
     let user = users[id];
+    console.log('helperfunction', getUserByEmail());
     if ((req.body.email === "") || (req.body.password === "")) {
       return res.status(400).send('Error 400 - Email and password must not be blank');
     } else if (user.email === req.body.email) {
@@ -222,27 +224,6 @@ app.post('/register', (req, res) => {
   return res.redirect('/login');
 });
 
-
-
-
-////////////NOT SURE IF I NEED THESE/////////////
-
-//STORES CODE FOR DATABASE
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
-
-//TEST CODE FOR SERVER
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
-});
-
-//TEST CODE FOR SERVER
-app.get('/', (req, res) => {
-  res.send('Hello!');
-});
-
-///////////////////////////////////////////////////
 
 
 app.listen(PORT, () => {
