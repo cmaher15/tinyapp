@@ -3,9 +3,9 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
-const getUserByEmail = require('./helpers');
-// const { generateRandomString } = require('./helpers');
-// const { urlsForUser } = require('./helpers');
+const { getUserByEmail } = require('./helpers');
+const { generateRandomString } = require('./helpers');
+const { urlsForUser } = require('./helpers');
 const req = require('express/lib/request');
 const res = require('express/lib/response');
 const { use } = require('express/lib/application');
@@ -53,24 +53,6 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000
 }));
 
-//FUNCTIONS
-
-
-const generateRandomString = () => {
-  const result = Math.random().toString(36).substring(2, 8);
-  return (result);
-};
-
-
-const urlsForUser = (loggedInUserID) => {
-  const userURLs = {};
-  for (let shortURL in urlDatabase) {
-    if (loggedInUserID === urlDatabase[shortURL].userID) {
-      userURLs[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return userURLs;
-};
 
 
 //ROUTES
@@ -133,7 +115,6 @@ app.get('/u/:shortURL', (req, res) => {
   if (!urlDatabase[shortURL]) {
     return res.status(404).send("404 - Page Not Found.");
   }
-
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
@@ -146,7 +127,6 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   if (url.userID !== userID) {
     return res.status(403).send('Error 403 - you do not have permission for this feature.');
   }
-
   delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
@@ -164,7 +144,6 @@ app.post('/urls/:shortURL/', (req, res) => {
   if (url.userID !== userID) {
     return res.status(403).send('Error 403 - You do not have permission for this feature.');
   }
-
   let returnUser = {
     longURL: req.body.longURL,
     userID
