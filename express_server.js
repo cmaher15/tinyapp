@@ -1,6 +1,6 @@
 const PORT = 8080;
 const express = require('express');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const req = require('express/lib/request');
@@ -44,7 +44,11 @@ const users = {
 
 //MIDDLEWARE
 app.set('view engine', 'ejs');
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['user_ID', 'key2'],
+  maxAge: 24 * 60 * 60 * 1000
+}));
 
 
 //HELPER FUNCTIONS
@@ -68,10 +72,10 @@ function urlsForUser(loggedInUserID) {
 
 //MAIN USER PAGE WHICH STORES THE URL DATABASE
 app.get('/urls', (req, res) => {
-  const userID = req.cookies['user_ID'];
+  const userID = req.session.user_id;
   const user = users[userID];
   if (!user) {
-    return res.status(403).send("Error 403 - Forbidden");
+    return res.status(403).send("Error 403 - You must be logged in to see this page");
   }
   const urls = urlsForUser(userID);
   const templateVars = { user, urls };
@@ -80,7 +84,7 @@ app.get('/urls', (req, res) => {
 
 //PAGE FOR USER TO ADD A NEW URL 
 app.get('/urls/new', (req, res) => {
-  const userID = req.cookies['user_ID'];
+  const userID = req.session.user_id;
   const user = users[userID];
   const templateVars = { user, urls: urlDatabase };
   if (user) {
@@ -93,7 +97,7 @@ app.get('/urls/new', (req, res) => {
 //CODE WHICH LETS USER ADD NEW URL AND GENERATES A RANDOM CODE FOR THAT URL. REDIRECTS THEM TO /SHORTURL PAGE ONCE LINK IS COMPLETE
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
-  const userID = req.cookies['user_ID'];
+  const userID = req.session.user_id;
   let returnUser = {
     longURL: req.body.longURL,
     userID
@@ -108,11 +112,11 @@ app.post('/urls', (req, res) => {
 
 //THE PAGE THAT GENERATES AFTER A SHORT URL IS CREATED.
 app.get('/urls/:shortURL', (req, res) => {
-  const userID = req.cookies['user_ID'];
+  const userID = req.session.user_id;
   const user = users[userID];
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user, urls: urlDatabase };
   if (!user) {
-    return res.status(403).send("Error 403 - Forbidden");
+    return res.status(403).send("Error 403 - you must be logged in to see this page");
   }
   res.render('urls_show', templateVars);
 });
@@ -130,11 +134,11 @@ app.get('/u/:shortURL', (req, res) => {
 
 //DELETES A LINK
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const userID = req.cookies['user_ID'];
+  const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
   const url = urlDatabase[shortURL];
   if (url.userID !== userID) {
-    return res.status(403).send('Error 403 - Forbidden');
+    return res.status(403).send('Error 403 - you do not have permission for this feature.');
   }
 
   delete urlDatabase[shortURL];
@@ -148,11 +152,11 @@ app.get('/urls/:shortURL/', (req, res) => {
 
 //ALLOWS A USER TO EDIT A LONG URL 
 app.post('/urls/:shortURL/', (req, res) => {
-  const userID = req.cookies['user_ID'];
+  const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
   const url = urlDatabase[shortURL];
   if (url.userID !== userID) {
-    return res.status(403).send('Error 403 - Forbidden');
+    return res.status(403).send('Error 403 - You do not have permission for this feature.');
   }
 
   let returnUser = {
@@ -165,7 +169,7 @@ app.post('/urls/:shortURL/', (req, res) => {
 
 //LOGIN PAGE FOR USER 
 app.get('/login', (req, res) => {
-  const userID = req.cookies['user_ID'];
+  const userID = req.session.user_id;
   const user = users[userID];
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
   res.render('url_login', templateVars);
@@ -178,7 +182,7 @@ app.post("/login", (req, res) => {
   for (const id in users) {
     const user = users[id];
     if (user.email === loginEmail && bcrypt.compareSync(loginPassword, user.password)) {
-      res.cookie('user_ID', user.id);
+      req.session.user_id = user['id'];
       return res.redirect('/urls');
     }
   }
@@ -188,13 +192,13 @@ app.post("/login", (req, res) => {
 
 //LOGOUT FOR USER
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_ID');
+  req.session = null;
   res.redirect('/login');
 });
 
 //REGISTRATION PAGE
 app.get('/register', (req, res) => {
-  const userID = req.cookies['user_ID'];
+  const userID = req.session.user_id;
   const user = users[userID];
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
   res.render('url_register', templateVars);
@@ -215,7 +219,6 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
   const hashPassword = bcrypt.hashSync(password, 10);
   users[userID] = { id: userID, email: req.body.email, password: hashPassword };
-  console.log('userID', users[userID]);
   return res.redirect('/login');
 });
 
