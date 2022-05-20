@@ -3,9 +3,7 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
-const { getUserByEmail } = require('./helpers');
-const { generateRandomString } = require('./helpers');
-const { urlsForUser } = require('./helpers');
+const getUserByEmail = require('./helpers');
 const req = require('express/lib/request');
 const res = require('express/lib/response');
 const { use } = require('express/lib/application');
@@ -20,12 +18,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
   b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW"
+    longURL: 'https://www.tsn.ca',
+    userID: 'aJ48lW'
   },
   i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW"
+    longURL: 'https://www.google.ca',
+    userID: 'aJ48lW'
   }
 };
 
@@ -53,7 +51,24 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000
 }));
 
+///HELPER FUNCTIONS///
 
+//TO GENERATE A RANDOM STRING TO USE FOR USER ID AND SHORT URLS//
+const generateRandomString = () => {
+  const result = Math.random().toString(36).substring(2, 8);
+  return (result);
+};
+
+//TO FILTER THE URLS PAGE BASED ON THE URLS THAT USER HAS MADE//
+const urlsForUser = (loggedInUserID) => {
+  const userURLs = {};
+  for (let shortURL in urlDatabase) {
+    if (loggedInUserID === urlDatabase[shortURL].userID) {
+      userURLs[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userURLs;
+};
 
 //ROUTES
 
@@ -62,7 +77,7 @@ app.get('/urls', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
   if (!user) {
-    return res.status(403).send("Error 403 - You must be logged in to see this page");
+    return res.status(403).send('Error 403 - you must be logged in to see this page. Please return to the login page: localhost:8080/login');
   }
   const urls = urlsForUser(userID);
   const templateVars = { user, urls };
@@ -104,7 +119,7 @@ app.get('/urls/:shortURL', (req, res) => {
   const { shortURL } = req.params;
   const templateVars = { shortURL, longURL: urlDatabase[shortURL], user, urls: urlDatabase };
   if (!user) {
-    return res.status(403).send("Error 403 - you must be logged in to see this page");
+    return res.status(403).send('Error 403 - you must be logged in to see this page. Please return to the login page: localhost:8080/login');
   }
   res.render('urls_show', templateVars);
 });
@@ -113,7 +128,7 @@ app.get('/urls/:shortURL', (req, res) => {
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   if (!urlDatabase[shortURL]) {
-    return res.status(404).send("404 - Page Not Found.");
+    return res.status(404).send('Error 404 - Page Not Found.');
   }
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
@@ -161,7 +176,7 @@ app.get('/login', (req, res) => {
 });
 
 //LOGIN FORM FOR USER
-app.post("/login", (req, res) => {
+app.post('/login', (req, res) => {
   const loginEmail = req.body.email;
   const loginPassword = req.body.password;
   const userData = getUserByEmail(loginEmail, users);
@@ -169,7 +184,7 @@ app.post("/login", (req, res) => {
     req.session.user_id = userData.id;
     return res.redirect('/urls');
   }
-  return res.status(401).send("Error 401 - Password or email are incorrect.");
+  return res.status(401).send('Error 401 - Password or email are incorrect.');
 });
 
 
@@ -207,3 +222,8 @@ app.post('/register', (req, res) => {
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
+
+//notes to mention:
+//my logout and register redirect to login, rather than urls
+//I tried to move my other functions and could not
+//I acknowledge the three "unused" items at the top but left them because we were told to install/require them 
