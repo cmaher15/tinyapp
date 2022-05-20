@@ -4,6 +4,8 @@ const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const getUserByEmail = require('./helpers');
+// const { generateRandomString } = require('./helpers');
+// const { urlsForUser } = require('./helpers');
 const req = require('express/lib/request');
 const res = require('express/lib/response');
 const { use } = require('express/lib/application');
@@ -13,8 +15,8 @@ const { use } = require('express/lib/application');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//DATABASES 
 
+//DATABASES 
 
 const urlDatabase = {
   b6UTxQ: {
@@ -51,15 +53,16 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000
 }));
 
+//FUNCTIONS
 
-//HELPER FUNCTIONS
 
-const generateRandomString = function() {
+const generateRandomString = () => {
   const result = Math.random().toString(36).substring(2, 8);
   return (result);
 };
 
-const urlsForUser = function(loggedInUserID) {
+
+const urlsForUser = (loggedInUserID) => {
   const userURLs = {};
   for (let shortURL in urlDatabase) {
     if (loggedInUserID === urlDatabase[shortURL].userID) {
@@ -116,7 +119,7 @@ app.post('/urls', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
-  const { shortURL } = req.params
+  const { shortURL } = req.params;
   const templateVars = { shortURL, longURL: urlDatabase[shortURL], user, urls: urlDatabase };
   if (!user) {
     return res.status(403).send("Error 403 - you must be logged in to see this page");
@@ -207,21 +210,17 @@ app.get('/register', (req, res) => {
 
 //REGISTRATION FORM
 app.post('/register', (req, res) => {
-
-  for (const id in users) {
-    let user = users[id];
-    console.log('helperfunction', getUserByEmail());
-    if ((req.body.email === "") || (req.body.password === "")) {
-      return res.status(400).send('Error 400 - Email and password must not be blank');
-    } else if (user.email === req.body.email) {
-      return res.status(400).send('Error 400 - Email already in use');
-    }
+  const registrationEmail = req.body.email;
+  const registrationPassword = req.body.password;
+  if (registrationEmail === "" || registrationPassword === "") {
+    return res.status(400).send('Error 400 - Email and password must not be blank');
+  } else if (getUserByEmail(registrationEmail, users)) {
+    return res.status(400).send('Error 400 - Email already in use');
   }
   const userID = generateRandomString();
-  const password = req.body.password;
-  const hashPassword = bcrypt.hashSync(password, 10);
-  users[userID] = { id: userID, email: req.body.email, password: hashPassword };
-  return res.redirect('/login');
+  const hashPassword = bcrypt.hashSync(registrationPassword, 10);
+  users[userID] = { id: userID, email: registrationEmail, password: hashPassword };
+  res.redirect('/login');
 });
 
 
